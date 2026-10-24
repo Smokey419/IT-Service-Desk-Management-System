@@ -1,0 +1,36 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Flask instance folder
+instance/
+
+# Editor and system files
+.vscode/
+.DS_Store
+Thumbs.db
+# Local database maintenance and account utilities
+check_database.py
+create_admin.py
+create_employee.py
+create_users.py
+migrate_database.py
+reset_admin.py
+reset_password.py
+restore_database.py
+setup_assets.py

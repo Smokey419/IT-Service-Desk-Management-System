@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit Asset' if asset else 'Add Asset' }} | IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+<header class="topbar">
+    <h2>IT Service Desk Management System</h2>
+
+    <div class="user-info">
+        <span>Logged in as: <strong>{{ current_user.username }}</strong> ({{ current_user.role }})</span>
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3>Navigation</h3>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('my_tickets') }}">View Tickets</a>
+        <a href="{{ url_for('new_ticket') }}">Create Ticket</a>
+        <a href="{{ url_for('assets') }}" class="active">Asset Management</a>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1>{{ 'Edit Asset' if asset else 'Add New Asset' }}</h1>
+                <p>Enter the equipment information below.</p>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="ticket-form-card">
+
+            <form method="POST"
+                  action="{{ url_for('edit_asset', asset_id=asset.id) if asset else url_for('new_asset') }}">
+
+                <label for="asset_tag">Asset Tag *</label>
+                <input type="text" id="asset_tag" name="asset_tag"
+                       maxlength="50" required
+                       value="{{ asset.asset_tag if asset else '' }}"
+                       placeholder="Example: LAP-001">
+
+                <label for="asset_type">Asset Type *</label>
+                <select id="asset_type" name="asset_type" required>
+                    {% for type in asset_types %}
+                    <option value="{{ type }}"
+                        {% if asset and asset.asset_type == type %}selected{% endif %}>
+                        {{ type }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <label for="manufacturer">Manufacturer</label>
+                <input type="text" id="manufacturer" name="manufacturer"
+                       maxlength="100"
+                       value="{{ asset.manufacturer or '' if asset else '' }}"
+                       placeholder="Example: Dell">
+
+                <label for="model">Model</label>
+                <input type="text" id="model" name="model"
+                       maxlength="100"
+                       value="{{ asset.model or '' if asset else '' }}"
+                       placeholder="Example: Latitude 5450">
+
+                <label for="serial_number">Serial Number</label>
+                <input type="text" id="serial_number" name="serial_number"
+                       maxlength="100"
+                       value="{{ asset.serial_number or '' if asset else '' }}">
+
+                <label for="assigned_to">Assigned To</label>
+                <input type="text" id="assigned_to" name="assigned_to"
+                       maxlength="100"
+                       value="{{ asset.assigned_to or '' if asset else '' }}"
+                       placeholder="Example: employee">
+
+                <label for="status">Status *</label>
+                <select id="status" name="status" required>
+                    {% for status in asset_statuses %}
+                    <option value="{{ status }}"
+                        {% if asset and asset.status == status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" rows="4"
+                          maxlength="5000"
+                          placeholder="Additional asset information...">{{ asset.notes or '' if asset else '' }}</textarea>
+
+                <button type="submit" class="primary-button">
+                    {{ 'Save Changes' if asset else 'Add Asset' }}
+                </button>
+
+                <a href="{{ url_for('assets') }}"
+                   style="margin-left:15px; color:#64748b;">
+                    Cancel
+                </a>
+
+            </form>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management | IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+<header class="topbar">
+    <h2>IT Service Desk Management System</h2>
+
+    <div class="user-info">
+        <span>Logged in as: <strong>{{ current_user.username }}</strong> ({{ current_user.role }})</span>
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3>Navigation</h3>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('my_tickets') }}">View Tickets</a>
+        <a href="{{ url_for('new_ticket') }}">Create Ticket</a>
+        <a href="{{ url_for('assets') }}" class="active">Asset Management</a>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Asset Management</h1>
+                <p>Track and manage company IT equipment.</p>
+            </div>
+
+            <a href="{{ url_for('new_asset') }}" class="primary-btn">
+                + Add New Asset
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="table-container">
+            <div class="section-header">
+                <h2>Company Assets</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset Tag</th>
+                        <th>Type</th>
+                        <th>Manufacturer / Model</th>
+                        <th>Serial Number</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for asset in assets %}
+                    <tr>
+                        <td>{{ asset.asset_tag }}</td>
+                        <td>{{ asset.asset_type }}</td>
+                        <td>{{ asset.manufacturer or '-' }} {{ asset.model or '' }}</td>
+                        <td>{{ asset.serial_number or '-' }}</td>
+                        <td>{{ asset.assigned_to or 'Unassigned' }}</td>
+                        <td>{{ asset.status }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_asset', asset_id=asset.id) }}"
+                               class="ticket-link">Edit</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:30px;">
+                            No assets registered yet. Click "Add New Asset" to get started.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

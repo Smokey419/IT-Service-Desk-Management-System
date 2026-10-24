@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Ticket | IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+    <header class="topbar">
+        <h2>IT Service Desk Management System</h2>
+
+        <div class="user-info">
+            <span>
+                Logged in as:
+                <strong>{{ current_user.username }}</strong>
+                ({{ current_user.role }})
+            </span>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('my_tickets') }}">
+                View Tickets
+            </a>
+
+            <a href="{{ url_for('new_ticket') }}" class="active">
+                Create Ticket
+            </a>
+
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('assets') }}">
+                    Asset Management
+                </a>
+            {% endif %}
+        </aside>
+
+        <main class="main-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>Submit IT Support Ticket</h1>
+                    <p>Describe your technical issue and submit a support request.</p>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <div class="ticket-form-card">
+
+                <form method="POST" action="{{ url_for('new_ticket') }}">
+
+                    <label for="title">Issue Title *</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        maxlength="150"
+                        placeholder="Brief description of the issue"
+                        required
+                    >
+
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                        <option value="Network / VPN">Network / VPN</option>
+                        <option value="Email">Email</option>
+                        <option value="Account Access">Account Access</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label for="priority">Priority *</label>
+                    <select id="priority" name="priority" required>
+                        <option value="">Select priority</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+
+                    <label for="description">Description *</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="6"
+                        placeholder="Explain the issue and any troubleshooting attempted"
+                        required
+                    ></textarea>
+
+                    <button type="submit" class="primary-button">
+                        Submit Ticket
+                    </button>
+
+                </form>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>

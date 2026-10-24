@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket #{{ ticket.id }} | IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+    <header class="topbar">
+        <h2>IT Service Desk Management System</h2>
+
+        <div class="user-info">
+            <span>
+                Logged in as:
+                <strong>{{ current_user.username }}</strong>
+                ({{ current_user.role }})
+            </span>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('my_tickets') }}" class="active">View Tickets</a>
+            <a href="{{ url_for('new_ticket') }}">Create Ticket</a>
+
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('assets') }}">Asset Management</a>
+            {% endif %}
+        </aside>
+
+        <main class="main-content">
+
+            <a href="{{ url_for('my_tickets') }}" class="detail-back-link">
+                &larr; Back to All Tickets
+            </a>
+
+            <div class="page-header">
+                <div>
+                    <h1>Ticket #{{ ticket.id }}</h1>
+                    <p>{{ ticket.title }}</p>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="detail-alert">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <section class="detail-card">
+                <h2>Ticket Information</h2>
+
+                <div class="detail-grid">
+
+                    <div class="detail-field">
+                        <strong>Submitted By</strong>
+                        <p>{{ ticket.requester.username }}</p>
+                    </div>
+
+                    <div class="detail-field">
+                        <strong>Category</strong>
+                        <p>{{ ticket.category }}</p>
+                    </div>
+
+                    <div class="detail-field">
+                        <strong>Priority</strong>
+                        <p>
+                            <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                                {{ ticket.priority }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="detail-field">
+                        <strong>Status</strong>
+                        <p>
+                            <span class="status-badge">
+                                {{ ticket.status }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="detail-field">
+                        <strong>Assigned To</strong>
+                        <p>
+                            {% if ticket.assignee %}
+                                {{ ticket.assignee.username }}
+                            {% else %}
+                                Unassigned
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="detail-field">
+                        <strong>Created</strong>
+                        <p>{{ ticket.created_at.strftime('%m/%d/%Y %I:%M %p') }}</p>
+                    </div>
+
+                </div>
+
+                <div class="detail-section">
+                    <h3>Description</h3>
+                    <p class="detail-description">{{ ticket.description }}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Troubleshooting / Resolution Notes</h3>
+                    <p class="detail-description">
+                        {{ ticket.resolution_notes or 'No resolution notes yet.' }}
+                    </p>
+                </div>
+            </section>
+
+            {% if current_user.role == 'admin' %}
+
+            <section class="detail-card">
+                <h2>Administrator Controls</h2>
+                <p class="detail-helper">
+                    Update ticket status, priority, assignment, and troubleshooting notes.
+                </p>
+
+                <form method="POST"
+                      action="{{ url_for('update_ticket', ticket_id=ticket.id) }}">
+
+                    <div class="detail-form-grid">
+
+                        <div class="detail-form-field">
+                            <label for="status">Ticket Status</label>
+                            <select name="status" id="status" required>
+                                {% for status in ['Open', 'In Progress', 'Resolved'] %}
+                                    <option value="{{ status }}"
+                                        {% if ticket.status == status %}selected{% endif %}>
+                                        {{ status }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="detail-form-field">
+                            <label for="priority">Priority</label>
+                            <select name="priority" id="priority" required>
+                                {% for priority in ['Low', 'Medium', 'High'] %}
+                                    <option value="{{ priority }}"
+                                        {% if ticket.priority == priority %}selected{% endif %}>
+                                        {{ priority }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="detail-form-field">
+                            <label for="assigned_to">Assign Administrator</label>
+                            <select name="assigned_to" id="assigned_to">
+                                <option value="">Unassigned</option>
+
+                                {% for admin in admins %}
+                                    <option value="{{ admin.id }}"
+                                        {% if ticket.assigned_to == admin.id %}selected{% endif %}>
+                                        {{ admin.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="detail-notes-field">
+                        <label for="resolution_notes">
+                            Troubleshooting / Resolution Notes
+                        </label>
+
+                        <textarea
+                            name="resolution_notes"
+                            id="resolution_notes"
+                            rows="5"
+                            maxlength="5000"
+                            placeholder="Enter troubleshooting steps and resolution notes..."
+                        >{{ ticket.resolution_notes or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="detail-save-button">
+                        Save Ticket Changes
+                    </button>
+
+                </form>
+            </section>
+
+            {% endif %}
+
+        </main>
+    </div>
+
+</body>
+</html>

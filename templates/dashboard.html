@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+    <header class="topbar">
+        <h2>IT Service Desk Management System</h2>
+
+        <div class="user-info">
+            <span>
+                Logged in as:
+                <strong>{{ current_user.username }}</strong>
+                ({{ current_user.role }})
+            </span>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-btn">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+
+            <a href="{{ url_for('dashboard') }}"
+               class="active">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('my_tickets') }}">
+                View Tickets
+            </a>
+
+            <a href="{{ url_for('new_ticket') }}">
+                Create Ticket
+            </a>
+
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('assets') }}">
+                    Asset Management
+                </a>
+            {% endif %}
+        </aside>
+
+        <main class="main-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Welcome back, {{ current_user.username }}!</p>
+                </div>
+
+                <a href="{{ url_for('new_ticket') }}"
+                   class="primary-btn">
+                    + Create New Ticket
+                </a>
+            </div>
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <h3>Total Tickets</h3>
+                    <p>{{ stats.total }}</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Open Tickets</h3>
+                    <p>{{ stats.open }}</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>In Progress</h3>
+                    <p>{{ stats.progress }}</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Resolved</h3>
+                    <p>{{ stats.resolved }}</p>
+                </div>
+
+            </div>
+
+            <div class="table-container">
+
+                <div class="section-header">
+                    <h2>Recent Support Tickets</h2>
+
+                    <a href="{{ url_for('my_tickets') }}">
+                        View All Tickets
+                    </a>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Title</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for ticket in recent_tickets %}
+
+                        <tr>
+                            <td>#{{ ticket.id }}</td>
+
+                            <td>
+                                <a href="{{ url_for(
+                                    'ticket_details',
+                                    ticket_id=ticket.id
+                                ) }}" class="ticket-link">
+                                    {{ ticket.title }}
+                                </a>
+                            </td>
+
+                            <td>
+                                <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="status-badge">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="4"
+                                style="text-align:center; padding:30px;">
+                                No tickets submitted yet.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>

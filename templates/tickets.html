@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets | IT Service Desk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-page">
+
+    <header class="topbar">
+        <h2>IT Service Desk Management System</h2>
+
+        <div class="user-info">
+            <span>
+                Logged in as:
+                <strong>{{ current_user.username }}</strong>
+                ({{ current_user.role }})
+            </span>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('my_tickets') }}" class="active">
+                View Tickets
+            </a>
+
+            <a href="{{ url_for('new_ticket') }}">
+                Create Ticket
+            </a>
+
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('assets') }}">
+                    Asset Management
+                </a>
+            {% endif %}
+        </aside>
+
+        <main class="main-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>
+                        {% if current_user.role == 'admin' %}
+                            All Support Tickets
+                        {% else %}
+                            My Support Tickets
+                        {% endif %}
+                    </h1>
+
+                    <p>Search, filter, and manage support tickets.</p>
+                </div>
+
+                <a href="{{ url_for('new_ticket') }}"
+                   class="primary-btn">
+                    + Create New Ticket
+                </a>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <!-- SEARCH AND FILTER PANEL -->
+
+            <div class="ticket-filter-card">
+
+                <form method="GET" action="{{ url_for('search_tickets') }}">
+
+                    <div class="ticket-filter-grid">
+
+                        <div class="filter-field">
+                            <label for="search">Search Tickets</label>
+                            <input
+                                type="text"
+                                id="search"
+                                name="search"
+                                placeholder="Ticket ID, title, or description"
+                                value="{{ search|default('', true) }}"
+                            >
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="">All Statuses</option>
+                                {% for value in ['Open', 'In Progress', 'Resolved'] %}
+                                    <option value="{{ value }}"
+                                        {% if selected_status|default('') == value %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority">
+                                <option value="">All Priorities</option>
+                                {% for value in ['Low', 'Medium', 'High'] %}
+                                    <option value="{{ value }}"
+                                        {% if selected_priority|default('') == value %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="category">Category</label>
+                            <select id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for value in ['Hardware', 'Software', 'Network / VPN', 'Email', 'Account Access', 'Other'] %}
+                                    <option value="{{ value }}"
+                                        {% if selected_category|default('') == value %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="primary-button">
+                            Search / Filter
+                        </button>
+
+                        <a href="{{ url_for('my_tickets') }}" class="clear-filter-btn">
+                            Clear Filters
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- SUPPORT TICKETS TABLE -->
+
+            <div class="table-container">
+
+                <div class="section-header">
+                    <h2>Support Tickets</h2>
+                    <span>{{ tickets|length }} ticket(s) found</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Submitted By</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for ticket in tickets %}
+
+                            <tr>
+                                <td>#{{ ticket.id }}</td>
+
+                                <td>
+                                    <a href="{{ url_for('ticket_details', ticket_id=ticket.id) }}"
+                                       class="ticket-link">
+                                        {{ ticket.title }}
+                                    </a>
+                                </td>
+
+                                <td>{{ ticket.category }}</td>
+
+                                <td>
+                                    <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                                        {{ ticket.priority }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge">
+                                        {{ ticket.status }}
+                                    </span>
+                                </td>
+
+                                <td>{{ ticket.requester.username }}</td>
+
+                                <td>{{ ticket.created_at.strftime('%m/%d/%Y') }}</td>
+                            </tr>
+
+                            {% else %}
+
+                            <tr>
+                                <td colspan="7"
+                                    style="text-align:center; padding:30px;">
+                                    No tickets match your search or filters.
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>
